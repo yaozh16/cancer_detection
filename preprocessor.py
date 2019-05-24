@@ -83,11 +83,13 @@ def cropValidBox(img_path, display=False):
         cv2.destroyAllWindows()
 
     return img_r[max(0,vs[0]-padding*2):vs[-1]-padding*2,max(0,hs[0]-padding*2):hs[-1]-padding*2,:]
-def format():
+def format2size():
     all_paths=sorted(glob.glob(os.path.join("train","images","*","*.jpg")))
     for i,img_path in enumerate(all_paths):
         img=cropValidBox(img_path, False)
         img=cv2.resize(img,(224,224))
+        dstpath=os.path.join("formated",img_path)
+        Common.checkDirectory(os.path.split(dstpath)[0])
         cv2.imwrite(os.path.join("formated",img_path),img)
 
 def splitTrainSet(p=0.7):
@@ -114,4 +116,4 @@ def splitTrainSet(p=0.7):
     splited_set2csv(os.path.join("train","valid.csv"),validset)
 
 if __name__=="__main__":
-    format()
+    format2size()
