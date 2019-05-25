@@ -83,38 +83,41 @@ def cropValidBox(img_path, display=False):
         cv2.destroyAllWindows()
 
     return img_r[max(0,vs[0]-padding*2):vs[-1]-padding*2,max(0,hs[0]-padding*2):hs[-1]-padding*2,:]
-def format2size():
-    all_paths=sorted(glob.glob(os.path.join("train","images","*","*.jpg")))
+def format2size(src_dir="train",dst_dir="formated"):
+    all_paths=sorted(glob.glob(os.path.join(src_dir,"images","*","*.jpg")))
     for i,img_path in enumerate(all_paths):
         img=cropValidBox(img_path, False)
         img=cv2.resize(img,(224,224))
-        dstpath=os.path.join("formated",img_path)
+        dstpath=os.path.join(dst_dir,img_path)
         Common.checkDirectory(os.path.split(dstpath)[0])
-        cv2.imwrite(os.path.join("formated",img_path),img)
+        cv2.imwrite(os.path.join(dst_dir,img_path),img)
 
-def splitTrainSet(p=0.7):
-    random.seed(1)
-    patients=pd.read_csv(os.path.join("train","feats.csv"))
-    all_img_paths=sorted(glob.glob(os.path.join("train","images","*","*.jpg")))
+def splitSet(p=0.7, src_dir="train", dst_dir=os.path.join("formated", "train")):
+    random.seed(1079)
+    Common.checkDirectory(dst_dir)
+    patients=pd.read_csv(os.path.join(src_dir,"feats.csv"))
+    all_img_paths=sorted(glob.glob(os.path.join(src_dir,"images","*","*.jpg")))
     trainset=random.sample(all_img_paths,int(p*len(all_img_paths)))
     validset=[e for e in all_img_paths if not e in trainset]
 
     def splited_set2csv(path,splited_set):
         with open(path,"w") as f:
             f.write("id,img,age,HER2,P53,molecular_subtype\n")
-            #print("id,img,age,HER2,P53,molecular_subtype")
             for img_path in splited_set:
                 img_idx=os.path.split(img_path)[-1]
                 id=os.path.split(os.path.split(img_path)[0])[-1]
                 p=patients[patients["id"]==id]
-                fstr="{0},{1},{2},{3},{4},{5}".format(p.id.values[0],img_idx,p.age.values[0]/80.0,p.HER2.values[0]/3.0,p.P53.values[0],p.molecular_subtype.values[0])
-                #print(fstr)
+                if(p.values.shape[0]==0):
+                    continue
+                fstr="{0},{1},{2},{3},{4},{5}".format(p.id.values[0],img_idx,p.age.values[0]/80.0,p.HER2.values[0]/3.0,int(p.P53.values[0]),int(p.values[0][-1]))
                 f.write(fstr)
                 f.write("\n")
             f.close()
-    splited_set2csv(os.path.join("formated","train","train.csv"),trainset)
-    splited_set2csv(os.path.join("formated","train","valid.csv"),validset)
+    splited_set2csv(os.path.join(dst_dir,"train.csv"),trainset)
+    splited_set2csv(os.path.join(dst_dir,"valid.csv"),validset)
 
 if __name__=="__main__":
-    splitTrainSet()
-    format2size()
+    splitSet(p=0.7, src_dir="train", dst_dir=os.path.join("formated", "train"))
+    splitSet(p=0, src_dir="test", dst_dir=os.path.join("formated", "test"))
+    format2size(src_dir="train",dst_dir="formated")
+    format2size(src_dir="test",dst_dir="formated")

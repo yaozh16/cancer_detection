@@ -8,6 +8,7 @@ import os
 from torch.utils.data import DataLoader
 from torchvision import transforms,models
 from CustomDataSet import MyDataset
+import Common
 
 class CustomVGG(nn.Module):
     def __init__(self, feature_cfg, D_out,batch_norm=False, init_weights=True):
@@ -126,7 +127,10 @@ def accuracy(y_pred,target):
     #print(int(target.size(0)))
     #return (predicted == actual).sum()
 
-if __name__=="__main__":
+
+
+def train():
+    Common.checkDirectory("model")
     # 根据自己定义的那个MyDataset来创建数据集！注意是数据集！而不是loader迭代器
     train_data = MyDataset(datacsv='train.csv',rootpath=os.path.join("formated","train"), transform=transforms.ToTensor())
     valid_data = MyDataset(datacsv='valid.csv',rootpath=os.path.join("formated","train"), transform=transforms.ToTensor())
@@ -136,15 +140,13 @@ if __name__=="__main__":
 
     model=CombineNet(3,3,5)
 
+    best_acc=0
 
     criterion = torch.nn.MSELoss(reduction='sum')
     optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
     for t in range(120):
         print("epoch {0}".format(t),flush=True)
         batch_index=0
-
-
-
         for img_data,diagnos_data, target in train_loader:
 
             # Forward pass: Compute predicted y by passing x to the model
@@ -160,11 +162,21 @@ if __name__=="__main__":
             optimizer.step()
 
             batch_index+=1
-
         accurate_count=0
         total_count=0
         for img_data,diagnos_data,target in valid_loader:
             y_pred = model(img_data ,diagnos_data)
             accurate_count+=accuracy(y_pred,target)*target.size(0)
             total_count+=target.size(0)
+        acc=accurate_count*1.0/total_count
         print("[accuracy]{0}".format(accurate_count*1.0/total_count),flush=True)
+        if(acc>best_acc):
+            best_acc=acc
+            torch.save(model.state_dict(), os.path.join("model","{0}_{1}.mdl".format(t,acc)))
+
+def test():
+    test_data = MyDataset(datacsv='train.csv',rootpath=os.path.join("formated","test"), transform=transforms.ToTensor())
+
+
+if __name__ == "__main__":
+    train()
