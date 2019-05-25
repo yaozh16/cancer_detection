@@ -1,6 +1,7 @@
 *.tar
 *.tar.gz
 test/
+backup/
 train/
 formated/
 __pycache__/

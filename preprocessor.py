@@ -112,8 +112,8 @@ def splitTrainSet(p=0.7):
                 f.write(fstr)
                 f.write("\n")
             f.close()
-    splited_set2csv(os.path.join("train","train.csv"),trainset)
-    splited_set2csv(os.path.join("train","valid.csv"),validset)
+    splited_set2csv(os.path.join("formated","train","train.csv"),trainset)
+    splited_set2csv(os.path.join("formated","train","valid.csv"),validset)
 
 if __name__=="__main__":
     splitTrainSet()
