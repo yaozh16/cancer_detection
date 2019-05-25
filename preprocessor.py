@@ -107,7 +107,7 @@ def splitTrainSet(p=0.7):
                 img_idx=os.path.split(img_path)[-1]
                 id=os.path.split(os.path.split(img_path)[0])[-1]
                 p=patients[patients["id"]==id]
-                fstr="{0},{1},{2},{3},{4},{5}".format(p.id.values[0],img_idx,p.age.values[0]*3,p.HER2.values[0]*64,int(p.P53.values[0])*255,p.molecular_subtype.values[0])
+                fstr="{0},{1},{2},{3},{4},{5}".format(p.id.values[0],img_idx,p.age.values[0]/80.0,p.HER2.values[0]/3.0,p.P53.values[0],p.molecular_subtype.values[0])
                 #print(fstr)
                 f.write(fstr)
                 f.write("\n")
