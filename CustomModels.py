@@ -140,7 +140,7 @@ if __name__=="__main__":
     criterion = torch.nn.MSELoss(reduction='sum')
     optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
     for t in range(120):
-        print("epoch {0}".format(t))
+        print("epoch {0}".format(t),flush=True)
         batch_index=0
 
 
@@ -152,7 +152,7 @@ if __name__=="__main__":
 
             # Compute and print loss
             loss = criterion(y_pred, target)
-            print("\t[e {0}:b {1}]{2}[{3}]".format(t ,batch_index, loss.item(),accuracy(y_pred,target)))
+            print("\t[e {0}:b {1}]{2}[{3}]".format(t ,batch_index, loss.item(),accuracy(y_pred,target)),flush=True)
 
             # Zero gradients, perform a backward pass, and update the weights.
             optimizer.zero_grad()
@@ -167,4 +167,4 @@ if __name__=="__main__":
             y_pred = model(img_data ,diagnos_data)
             accurate_count+=accuracy(y_pred,target)*target.size(0)
             total_count+=target.size(0)
-        print("[accuracy]{0}".format(accurate_count*1.0/total_count))
+        print("[accuracy]{0}".format(accurate_count*1.0/total_count),flush=True)
