@@ -67,7 +67,8 @@ class ImageNet(torch.nn.Module):
         self.Image_in=Image_in
         self.D_out=D_out
 
-        self.net=models.vgg11(num_classes=D_out)
+        #self.net=models.vgg11(num_classes=D_out)
+        self.net=models.vgg19(num_classes=D_out)
 
     def forward(self, image_data):
         y_pred= self.net(image_data)
