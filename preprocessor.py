@@ -116,4 +116,5 @@ def splitTrainSet(p=0.7):
     splited_set2csv(os.path.join("train","valid.csv"),validset)
 
 if __name__=="__main__":
+    splitTrainSet()
     format2size()
