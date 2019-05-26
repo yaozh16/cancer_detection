@@ -33,7 +33,7 @@ class CombineNet(torch.nn.Module):
             self.imagenet = models.resnet34(pretrained=True)
             self.imagenet.fc=nn.Linear(512,self.H1)
         elif(net_type=="resnet101"):
-            self.imagenet = models.resnet101(pretrained=True)
+            self.imagenet = models.resnet101(pretrained=False)
             self.imagenet.fc=nn.Linear(2048,self.H1)
         elif(net_type=="resnet152"):
             self.imagenet = models.resnet152(pretrained=True)
@@ -75,9 +75,12 @@ class CombineNet(torch.nn.Module):
         torch.save(self.diagnosnet.state_dict(), "{0}_{1}.mdl".format(path_prefix,"diagnos"))
         torch.save(self.fc.state_dict(), "{0}_{1}.mdl".format(path_prefix,"fc"))
     def load_from(self,path_prefix_img,path_prefix_diagnos,path_prefix_fc):
-        self.imagenet.load_state_dict(torch.load("{0}_{1}.mdl".format(path_prefix_img,"image")))
-        self.diagnosnet.load_state_dict(torch.load("{0}_{1}.mdl".format(path_prefix_diagnos,"diagnos")))
-        self.fc.load_state_dict(torch.load("{0}_{1}.mdl".format(path_prefix_fc,"fc")))
+        if(path_prefix_img!=None):
+            self.imagenet.load_state_dict(torch.load("{0}_{1}.mdl".format(path_prefix_img,"image")))
+        if(path_prefix_diagnos!=None):
+            self.diagnosnet.load_state_dict(torch.load("{0}_{1}.mdl".format(path_prefix_diagnos,"diagnos")))
+        if(path_prefix_fc!=None):
+            self.fc.load_state_dict(torch.load("{0}_{1}.mdl".format(path_prefix_fc,"fc")))
 
 def accuracy(y_pred,target):
     _, predicted = torch.max(y_pred.data, 1)
@@ -88,8 +91,8 @@ def accuracy(y_pred,target):
 
 def train(train_option, net_type):
     model=CombineNet(3, 3, 5,train_option= train_option,net_type= net_type)
-    save_path=os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, train_option, 2, "0.48623853211009177"))
-    #model.load_from()
+    img_mdl_path=os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, train_option, 1, "0.5779816513761468_"))
+    model.load_from(img_mdl_path,None,None)
     Common.checkDirectory("model")
     # 根据自己定义的那个MyDataset来创建数据集！注意是数据集！而不是loader迭代器
     train_data = MyDataset(datacsv='train.csv',rootpath=os.path.join("formated","train"), transform=transforms.ToTensor())
@@ -103,25 +106,27 @@ def train(train_option, net_type):
 
     criterion = torch.nn.MSELoss(reduction='sum')
 
-    optimizer = torch.optim.SGD(model.parameters(), lr=1e-4,momentum = 0.4)
+    optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
     #optimizer = torch.optim.adam(model.parameters(), lr=1e-4 )
     for epo in range(120):
         print("epoch {0}".format(epo),flush=True)
         batch_index=0
         for img_data,diagnos_data, target in train_loader:
+            try:
+                # Forward pass: Compute predicted y by passing x to the model
+                y_pred = model(img_data ,diagnos_data)
 
-            # Forward pass: Compute predicted y by passing x to the model
-            y_pred = model(img_data ,diagnos_data)
+                # Compute and print loss
+                loss = criterion(y_pred, target)
+                print("\t[e {0}:b {1}]{2}[{3}]".format(epo ,batch_index, loss.item(),accuracy(y_pred,target)),flush=True)
 
-            # Compute and print loss
-            loss = criterion(y_pred, target)
-            print("\t[e {0}:b {1}]{2}[{3}]".format(epo ,batch_index, loss.item(),accuracy(y_pred,target)),flush=True)
-
-            # Zero gradients, perform a backward pass, and update the weights.
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-
+                # Zero gradients, perform a backward pass, and update the weights.
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+            except Exception as e:
+                print("[ERROR!]{0}:ignored".format(e))
+            del img_data,diagnos_data,target
             batch_index+=1
         accurate_count=0
         total_count=0
@@ -129,11 +134,12 @@ def train(train_option, net_type):
             y_pred = model(img_data ,diagnos_data)
             accurate_count+=accuracy(y_pred,target)*target.size(0)
             total_count+=target.size(0)
+            del img_data,diagnos_data,target
         acc=accurate_count*1.0/total_count
         print("[accuracy]{0}".format(accurate_count*1.0/total_count),flush=True)
         if(acc>best_acc):
             best_acc=acc
-            model.save_to(os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, train_option, epo, acc)))
+        model.save_to(os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, train_option, epo, acc)))
 
 def test(epo,acc,title1,title2,title3,type1,type2,type3):
     test_data = MyDataset(datacsv='valid.csv',rootpath=os.path.join("formated","test"), transform=transforms.ToTensor())
@@ -154,4 +160,4 @@ def test(epo,acc,title1,title2,title3,type1,type2,type3):
             batch_index+=1
 
 if __name__ == "__main__":
-    train("IMG_ONLY","resnet101")
+    train("BOTH","resnet50")
