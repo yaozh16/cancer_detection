@@ -21,7 +21,7 @@ class CombineNet(torch.nn.Module):
         self.D_out=D_out
         self.H1=60
         self.H2=20
-        self.imagenet=models.vgg13(num_classes=self.H1)
+        self.imagenet=models.vgg11(num_classes=self.H1)
         #self.imagenet.fc=nn.Linear(2048,self.H1)
         self.diagnosnet=nn.Sequential(
             nn.Linear(self.Diagnos_in, 100),
@@ -39,8 +39,8 @@ class CombineNet(torch.nn.Module):
                                   src_img.view(src_img.size(0), -1)),
                                  dim=1)
             elif(self.custom_option=="DIA_ONLY"):
-                return torch.cat((src_img.view(src_img.size(0), -1),
-                                  src_img.view(src_img.size(0), -1)),
+                return torch.cat((src_dia.view(src_dia.size(0), -1),
+                                  src_dia.view(src_dia.size(0), -1)),
                                  dim=1)
             else:
                 return torch.cat((src_img.view(src_img.size(0), -1),
@@ -71,9 +71,9 @@ def accuracy(y_pred,target):
 
 
 
-def train():
+def train(type):
 
-    model=CombineNet(3,3,5,"IMG_ONLY")
+    model=CombineNet(3,3,5,type)
     Common.checkDirectory("model")
     # 根据自己定义的那个MyDataset来创建数据集！注意是数据集！而不是loader迭代器
     train_data = MyDataset(datacsv='train.csv',rootpath=os.path.join("formated","train"), transform=transforms.ToTensor())
@@ -86,7 +86,9 @@ def train():
     best_acc=0
 
     criterion = torch.nn.MSELoss(reduction='sum')
-    optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
+
+    optimizer = torch.optim.SGD(model.parameters(), lr=1e-4,momentum = 0.4)
+    #optimizer = torch.optim.adam(model.parameters(), lr=1e-4 )
     for epo in range(120):
         print("epoch {0}".format(epo),flush=True)
         batch_index=0
@@ -115,14 +117,16 @@ def train():
         print("[accuracy]{0}".format(accurate_count*1.0/total_count),flush=True)
         if(acc>best_acc):
             best_acc=acc
-            model.save_to(os.path.join("model","{0}_{1}".format(epo,acc)))
+            model.save_to(os.path.join("model","{0}_{1}_{2}".format(type,epo,acc)))
 
-def test(epo,acc):
+def test(epo,acc,type1,type2,type3):
     test_data = MyDataset(datacsv='valid.csv',rootpath=os.path.join("formated","test"), transform=transforms.ToTensor())
     valid_loader = DataLoader(dataset=test_data, batch_size=1, shuffle=False)
     model = CombineNet(3, 3, 5, "IMG_ONLY")
-    para_path=os.path.join("model","{0}_{1}".format(epo,acc))
-    model.load_from(para_path,para_path,para_path)
+    para_path1=os.path.join("model","{0}_{1}_{2}".format(type1,epo,acc))
+    para_path2=os.path.join("model","{0}_{1}_{2}".format(type2,epo,acc))
+    para_path3=os.path.join("model","{0}_{1}_{2}".format(type3,epo,acc))
+    model.load_from(para_path1,para_path2,para_path3)
     batch_index=0
     for img_data,diagnos_data, target in valid_loader:
 
@@ -134,4 +138,4 @@ def test(epo,acc):
             batch_index+=1
 
 if __name__ == "__main__":
-    train()
+    train("IMG_ONLY")
