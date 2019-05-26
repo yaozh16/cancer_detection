@@ -28,7 +28,7 @@ class MyDataset(Dataset):  # 创建自己的类：MyDataset,这个类是继承�
             self.labelcandidates[i,i]=1
         self.dtype = torch.float
         self.device = torch.device
-        print("load {0} items from {1}".format(self.datavalues.shape[0],datacsv))
+        print("load {0} items from {1}".format(self.datavalues.shape[0],datacsv),flush=True)
     def __getitem__(self, index):
         # 这个方法是必须要有的，用于按照索引读取每个元素的具体内容
         img_path = os.path.join(self.rootpath,"images",self.datavalues[index][0],self.datavalues[index][1])

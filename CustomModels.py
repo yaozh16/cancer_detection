@@ -21,7 +21,7 @@ class CombineNet(torch.nn.Module):
         self.D_out=D_out
         self.H1=60
         self.H2=20
-        print("img net_type:{0}".format(net_type))
+        print("img net_type:{0}".format(net_type),flush=True)
         if(net_type=="vgg11"):
             self.imagenet=models.vgg11(num_classes=self.H1)
         elif(net_type=="vgg13"):
@@ -173,4 +173,4 @@ def test(epo,acc,title1,title2,title3,type1,type2,type3):
             batch_index+=1
 
 if __name__ == "__main__":
-    train("DIA_ONLY","resnet50")
+    train("IMG_ONLY","resnet50")
