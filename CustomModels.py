@@ -26,13 +26,13 @@ class CombineNet(torch.nn.Module):
             self.imagenet=models.vgg11(num_classes=self.H1)
         elif(net_type=="vgg13"):
             self.imagenet=models.vgg13(num_classes=self.H1)
-        elif(net_type=="resnet_50"):
+        elif(net_type=="resnet50"):
             self.imagenet = models.resnet50(pretrained=True)
             self.imagenet.fc=nn.Linear(2048,self.H1)
-        elif(net_type=="resnet_34"):
+        elif(net_type=="resnet34"):
             self.imagenet = models.resnet34(pretrained=True)
             self.imagenet.fc=nn.Linear(512,self.H1)
-        elif(net_type=="resnet_152"):
+        elif(net_type=="resnet152"):
             self.imagenet = models.resnet152(pretrained=True)
             self.imagenet.fc=nn.Linear(2048,self.H1)
         else:
