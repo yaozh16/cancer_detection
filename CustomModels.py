@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms,models
 from CustomDataSet import MyDataset
 import Common
-
+import numpy as np
 
 
 class CombineNet(torch.nn.Module):
@@ -21,7 +21,11 @@ class CombineNet(torch.nn.Module):
         self.D_out=D_out
         self.H1=60
         self.H2=20
-        self.imagenet=models.vgg11(pretrained=True,num_classes=self.H1)
+        self.imagenet=models.resnet152(pretrained=True)
+        self.imagenet.fc=nn.Sequential(
+            nn.Linear(2048,self.H1),
+            nn.ReLU(inplace=True),
+        )
         self.diagnosnet=nn.Sequential(
             nn.Linear(self.Diagnos_in, 100),
             nn.ReLU(inplace=True) ,
@@ -71,6 +75,8 @@ def accuracy(y_pred,target):
 
 
 def train():
+
+    model=CombineNet(3,3,5,"IMG_ONLY")
     Common.checkDirectory("model")
     # 根据自己定义的那个MyDataset来创建数据集！注意是数据集！而不是loader迭代器
     train_data = MyDataset(datacsv='train.csv',rootpath=os.path.join("formated","train"), transform=transforms.ToTensor())
@@ -79,7 +85,6 @@ def train():
     train_loader = DataLoader(dataset=train_data, batch_size=64, shuffle=True)
     valid_loader = DataLoader(dataset=valid_data, batch_size=10)
 
-    model=CombineNet(3,3,5,"IMG_ONLY")
 
     best_acc=0
 
