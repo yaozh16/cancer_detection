@@ -81,7 +81,7 @@ def accuracy(y_pred,target):
     #return (predicted == actual).sum()
 
 def train(type,title,net_type):
-    model=CombineNet(3,3,5,type)
+    model=CombineNet(3,3,5,type,net_type)
     save_path=os.path.join("model","{0}_{1}_{2}_{3}".format(title,type,2,"0.48623853211009177"))
     #model.load_from()
     Common.checkDirectory("model")
