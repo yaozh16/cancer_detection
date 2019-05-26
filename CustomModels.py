@@ -91,7 +91,7 @@ def accuracy(y_pred,target):
 
 def train(train_option, net_type):
     model=CombineNet(3, 3, 5,train_option= train_option,net_type= net_type)
-    img_mdl_path=os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 1, "0.5779816513761468_"))
+    img_mdl_path=os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 1, "0.5779816513761468"))
     model.load_from(img_mdl_path,None,None)
     Common.checkDirectory("model")
     # 根据自己定义的那个MyDataset来创建数据集！注意是数据集！而不是loader迭代器
