@@ -174,4 +174,4 @@ def test(epo,acc,title1,title2,title3,type1,type2,type3):
             batch_index+=1
 
 if __name__ == "__main__":
-    train("IMG_ONLY","resnet50")
+    train("DIA_ONLY","resnet50")
