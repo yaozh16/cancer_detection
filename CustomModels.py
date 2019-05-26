@@ -21,6 +21,7 @@ class CombineNet(torch.nn.Module):
         self.D_out=D_out
         self.H1=60
         self.H2=20
+        print("train_option:{0}".format(train_option),flush=True)
         print("img net_type:{0}".format(net_type),flush=True)
         if(net_type=="vgg11"):
             self.imagenet=models.vgg11(num_classes=self.H1)
