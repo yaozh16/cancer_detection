@@ -13,27 +13,29 @@ import numpy as np
 
 
 class CombineNet(torch.nn.Module):
-    def __init__(self, Image_in,Diagnos_in, D_out,custom_option,net_type=None):
+    def __init__(self, Image_in, Diagnos_in, D_out, train_option, net_type=None):
         super(CombineNet, self).__init__()
-        self.custom_option=custom_option
+        self.train_option=train_option
         self.Image_in=Image_in
         self.Diagnos_in=Diagnos_in
         self.D_out=D_out
         self.H1=60
         self.H2=20
-        if(net_type==models.vgg11 or
-            net_type==models.vgg13 or
-            net_type==models.vgg19):
-            self.imagenet=net_type(num_classes=self.H1)
-        elif(net_type==models.resnet50):
-            self.imagenet = net_type(pretrained=True)
+        if(net_type=="vgg11"):
+            self.imagenet=models.vgg11(num_classes=self.H1)
+        elif(net_type=="vgg13"):
+            self.imagenet=models.vgg13(num_classes=self.H1)
+        elif(net_type=="resnet_50"):
+            self.imagenet = models.resnet50(pretrained=True)
             self.imagenet.fc=nn.Linear(2048,self.H1)
-        elif(net_type==models.resnet34):
-            self.imagenet = net_type(pretrained=True)
+        elif(net_type=="resnet_34"):
+            self.imagenet = models.resnet34(pretrained=True)
             self.imagenet.fc=nn.Linear(512,self.H1)
+        elif(net_type=="resnet_152"):
+            self.imagenet = models.resnet152(pretrained=True)
+            self.imagenet.fc=nn.Linear(2048,self.H1)
         else:
             assert False
-        self.imagenet.fc=nn.Linear(2048,self.H1)
         self.diagnosnet=nn.Sequential(
             nn.Linear(self.Diagnos_in, 100),
             nn.ReLU(inplace=True) ,
@@ -45,11 +47,11 @@ class CombineNet(torch.nn.Module):
             nn.Linear(self.H2,self.D_out),
         )
         def combine_func(src_img,src_dia):
-            if(self.custom_option=="IMG_ONLY"):
+            if(self.train_option== "IMG_ONLY"):
                 return torch.cat((src_img.view(src_img.size(0), -1),
                                   src_img.view(src_img.size(0), -1)),
                                  dim=1)
-            elif(self.custom_option=="DIA_ONLY"):
+            elif(self.train_option == "DIA_ONLY"):
                 return torch.cat((src_dia.view(src_dia.size(0), -1),
                                   src_dia.view(src_dia.size(0), -1)),
                                  dim=1)
@@ -80,9 +82,9 @@ def accuracy(y_pred,target):
     #print(int(target.size(0)))
     #return (predicted == actual).sum()
 
-def train(type,title,net_type):
-    model=CombineNet(3,3,5,type,net_type)
-    save_path=os.path.join("model","{0}_{1}_{2}_{3}".format(title,type,2,"0.48623853211009177"))
+def train(train_option, net_type):
+    model=CombineNet(3, 3, 5, train_option, net_type)
+    save_path=os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, train_option, 2, "0.48623853211009177"))
     #model.load_from()
     Common.checkDirectory("model")
     # 根据自己定义的那个MyDataset来创建数据集！注意是数据集！而不是loader迭代器
@@ -127,7 +129,7 @@ def train(type,title,net_type):
         print("[accuracy]{0}".format(accurate_count*1.0/total_count),flush=True)
         if(acc>best_acc):
             best_acc=acc
-            model.save_to(os.path.join("model","{0}_{1}_{2}_{3}".format(title,type,epo,acc)))
+            model.save_to(os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, train_option, epo, acc)))
 
 def test(epo,acc,title1,title2,title3,type1,type2,type3):
     test_data = MyDataset(datacsv='valid.csv',rootpath=os.path.join("formated","test"), transform=transforms.ToTensor())
@@ -148,4 +150,4 @@ def test(epo,acc,title1,title2,title3,type1,type2,type3):
             batch_index+=1
 
 if __name__ == "__main__":
-    train("IMG_ONLY","resnet34",models.resnet34)
+    train("IMG_ONLY","resnet34")
