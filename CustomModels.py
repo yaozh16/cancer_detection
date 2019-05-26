@@ -97,19 +97,15 @@ def accuracy(y_pred,target):
     _, actual = torch.max(target.data, 1)
     return int((predicted == actual).sum())*1.0/target.size(0)
 
-def train(train_option, net_type):
-    model=CombineNet(3, 3, 5,train_option= train_option,net_type= net_type)
-    img_mdl_path=os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 12, "0.6055045871559633"))
-    dia_mdl_path=os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 12, "0.6055045871559633"))
-    fc_mdl_path =os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 12, "0.6055045871559633"))
-    model.load_from(img_mdl_path,dia_mdl_path,fc_mdl_path)
+def train(model,train_option, net_type):
+
     Common.checkDirectory("model")
     # 根据自己定义的那个MyDataset来创建数据集！注意是数据集！而不是loader迭代器
     train_data = MyDataset(datacsv='train.csv',rootpath=os.path.join("formated","train"), transform=transforms.ToTensor())
     valid_data = MyDataset(datacsv='valid.csv',rootpath=os.path.join("formated","train"), transform=transforms.ToTensor())
 
-    train_loader = DataLoader(dataset=train_data, batch_size=64, shuffle=True)
-    valid_loader = DataLoader(dataset=valid_data, batch_size=10)
+    train_loader = DataLoader(dataset=train_data, batch_size=58, shuffle=True)
+    valid_loader = DataLoader(dataset=valid_data, batch_size=60)
 
 
     best_acc=0
@@ -118,7 +114,7 @@ def train(train_option, net_type):
 
     optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()),
                                 lr=1e-4,
-                                momentum = 0.3,
+                                momentum = 0.2,
                                )
     def valid_round():
         accurate_count = 0
@@ -161,7 +157,7 @@ def train(train_option, net_type):
 
 def test(epo,acc,title1,title2,title3,type1,type2,type3):
     test_data = MyDataset(datacsv='valid.csv',rootpath=os.path.join("formated","test"), transform=transforms.ToTensor())
-    valid_loader = DataLoader(dataset=test_data, batch_size=1, shuffle=False)
+    valid_loader = DataLoader(dataset=test_data, batch_size=50, shuffle=False)
     model = CombineNet(3, 3, 5, "IMG_ONLY","BOTH")
     para_path1=os.path.join("model","{0}_{1}_{2}_{3}".format(title1,type1,epo,acc))
     para_path2=os.path.join("model","{0}_{1}_{2}_{3}".format(title2,type2,epo,acc))
@@ -178,4 +174,15 @@ def test(epo,acc,title1,title2,title3,type1,type2,type3):
             batch_index+=1
 
 if __name__ == "__main__":
-    train("IMG_ONLY","resnet50")
+    train_option="IMG_ONLY"
+    net_type="resnet50"
+
+    model = CombineNet(3, 3, 5, train_option=train_option, net_type=net_type)
+    #img_mdl_path = None
+    img_mdl_path = os.path.join("model", "{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 12, "0.6055045871559633"))
+    #dia_mdl_path = os.path.join("model", "{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 12, "0.6055045871559633"))
+    dia_mdl_path =None
+    #fc_mdl_path = None
+    fc_mdl_path = os.path.join("model", "{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 12, "0.6055045871559633"))
+    model.load_from(img_mdl_path, dia_mdl_path, fc_mdl_path)
+    train(model,train_option,net_type)
