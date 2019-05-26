@@ -20,9 +20,8 @@ class CombineNet(torch.nn.Module):
         self.Diagnos_in=Diagnos_in
         self.D_out=D_out
         self.H1=60
-        self.H2=100
-        self.H3=20
-        self.imagenet=models.vgg11(num_classes=self.H1)
+        self.H2=20
+        self.imagenet=models.vgg11(pretrained=True,num_classes=self.H1)
         self.diagnosnet=nn.Sequential(
             nn.Linear(self.Diagnos_in, 100),
             nn.ReLU(inplace=True) ,
@@ -31,9 +30,7 @@ class CombineNet(torch.nn.Module):
         self.fc=nn.Sequential(
             nn.Linear(self.H1*2,self.H2),
             nn.ReLU(inplace=True),
-            nn.Linear(self.H2,self.H3),
-            nn.ReLU(inplace=True) ,
-            nn.Linear(self.H3, self.D_out),
+            nn.Linear(self.H2,self.D_out),
         )
         def combine_func(src_img,src_dia):
             if(self.custom_option=="IMG_ONLY"):
@@ -118,9 +115,21 @@ def train():
             best_acc=acc
             model.save_to(os.path.join("model","{0}_{1}".format(epo,acc)))
 
-def test():
-    test_data = MyDataset(datacsv='train.csv',rootpath=os.path.join("formated","test"), transform=transforms.ToTensor())
+def test(epo,acc):
+    test_data = MyDataset(datacsv='valid.csv',rootpath=os.path.join("formated","test"), transform=transforms.ToTensor())
+    valid_loader = DataLoader(dataset=test_data, batch_size=1, shuffle=False)
+    model = CombineNet(3, 3, 5, "IMG_ONLY")
+    para_path=os.path.join("model","{0}_{1}".format(epo,acc))
+    model.load_from(para_path,para_path,para_path)
+    batch_index=0
+    for img_data,diagnos_data, target in valid_loader:
 
+            # Forward pass: Compute predicted y by passing x to the model
+            y_pred = model(img_data ,diagnos_data)
+            _, predicted = torch.max(y_pred.data, 1)
+            id=test_data.datavalues[batch_index][0]
+            print("{0}:{1}".format(id,predicted))
+            batch_index+=1
 
 if __name__ == "__main__":
     train()
