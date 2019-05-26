@@ -153,7 +153,9 @@ def train(train_option, net_type):
         acc=valid_round()
         if(acc>best_acc):
             best_acc=acc
-        model.save_to(os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, train_option, epo, acc)))
+            model.save_to(os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, train_option, epo, acc)))
+        elif(epo%3==0):
+            model.save_to(os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, train_option, epo, acc)))
 
 def test(epo,acc,title1,title2,title3,type1,type2,type3):
     test_data = MyDataset(datacsv='valid.csv',rootpath=os.path.join("formated","test"), transform=transforms.ToTensor())
