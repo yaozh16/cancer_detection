@@ -125,7 +125,7 @@ def train(train_option, net_type):
                 loss.backward()
                 optimizer.step()
             except Exception as e:
-                print("[ERROR!]{0}:ignored".format(e))
+                print("[ERROR!]{0}:ignored".format(e),flush=True)
             del img_data,diagnos_data,target
             batch_index+=1
         accurate_count=0
@@ -160,4 +160,4 @@ def test(epo,acc,title1,title2,title3,type1,type2,type3):
             batch_index+=1
 
 if __name__ == "__main__":
-    train("BOTH","resnet50")
+    train("IMG_ONLY","resnet50")
