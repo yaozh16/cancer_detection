@@ -13,7 +13,7 @@ import numpy as np
 
 
 class CombineNet(torch.nn.Module):
-    def __init__(self, Image_in, Diagnos_in, D_out, train_option, net_type=None):
+    def __init__(self, Image_in, Diagnos_in, D_out, train_option, net_type):
         super(CombineNet, self).__init__()
         self.train_option=train_option
         self.Image_in=Image_in
@@ -21,6 +21,7 @@ class CombineNet(torch.nn.Module):
         self.D_out=D_out
         self.H1=60
         self.H2=20
+        print("img net_type:{0}".format(net_type))
         if(net_type=="vgg11"):
             self.imagenet=models.vgg11(num_classes=self.H1)
         elif(net_type=="vgg13"):
@@ -83,7 +84,7 @@ def accuracy(y_pred,target):
     #return (predicted == actual).sum()
 
 def train(train_option, net_type):
-    model=CombineNet(3, 3, 5, train_option, net_type)
+    model=CombineNet(3, 3, 5,train_option= train_option,net_type= net_type)
     save_path=os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, train_option, 2, "0.48623853211009177"))
     #model.load_from()
     Common.checkDirectory("model")
