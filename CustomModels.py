@@ -13,7 +13,7 @@ import numpy as np
 
 
 class CombineNet(torch.nn.Module):
-    def __init__(self, Image_in,Diagnos_in, D_out,custom_option):
+    def __init__(self, Image_in,Diagnos_in, D_out,custom_option,net_type=None):
         super(CombineNet, self).__init__()
         self.custom_option=custom_option
         self.Image_in=Image_in
@@ -21,8 +21,18 @@ class CombineNet(torch.nn.Module):
         self.D_out=D_out
         self.H1=60
         self.H2=20
-        #self.imagenet=models.vgg11(num_classes=self.H1)
-        self.imagenet=models.resnet34(pretrained=True)
+        if(net_type==models.vgg11 or
+            net_type==models.vgg13 or
+            net_type==models.vgg19):
+            self.imagenet=net_type(num_classes=self.H1)
+        elif(net_type==models.resnet50):
+            self.imagenet = net_type(pretrained=True)
+            self.imagenet.fc=nn.Linear(2048,self.H1)
+        elif(net_type==models.resnet34):
+            self.imagenet = net_type(pretrained=True)
+            self.imagenet.fc=nn.Linear(512,self.H1)
+        else:
+            assert False
         self.imagenet.fc=nn.Linear(2048,self.H1)
         self.diagnosnet=nn.Sequential(
             nn.Linear(self.Diagnos_in, 100),
@@ -70,7 +80,7 @@ def accuracy(y_pred,target):
     #print(int(target.size(0)))
     #return (predicted == actual).sum()
 
-def train(type,title):
+def train(type,title,net_type):
     model=CombineNet(3,3,5,type)
     save_path=os.path.join("model","{0}_{1}_{2}_{3}".format(title,type,2,"0.48623853211009177"))
     #model.load_from()
@@ -138,4 +148,4 @@ def test(epo,acc,title1,title2,title3,type1,type2,type3):
             batch_index+=1
 
 if __name__ == "__main__":
-    train("IMG_ONLY","resnet34")
+    train("IMG_ONLY","resnet34",models.resnet34)
