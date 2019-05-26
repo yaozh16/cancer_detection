@@ -40,6 +40,7 @@ class CombineNet(torch.nn.Module):
             self.imagenet.fc=nn.Linear(2048,self.H1)
         else:
             assert False
+
         self.diagnosnet=nn.Sequential(
             nn.Linear(self.Diagnos_in, 100),
             nn.ReLU(inplace=True) ,
@@ -50,20 +51,26 @@ class CombineNet(torch.nn.Module):
             nn.ReLU(inplace=True),
             nn.Linear(self.H2,self.D_out),
         )
-        def combine_func(src_img,src_dia):
-            if(self.train_option== "IMG_ONLY"):
-                return torch.cat((src_img.view(src_img.size(0), -1),
-                                  src_img.view(src_img.size(0), -1)),
-                                 dim=1)
-            elif(self.train_option == "DIA_ONLY"):
-                return torch.cat((src_dia.view(src_dia.size(0), -1),
-                                  src_dia.view(src_dia.size(0), -1)),
-                                 dim=1)
-            else:
-                return torch.cat((src_img.view(src_img.size(0), -1),
-                                  src_dia.view(src_dia.size(0), -1)),
-                                 dim=1)
-        self.combine_func=combine_func
+        if (self.train_option == "IMG_ONLY"):
+            for k, v in self.diagnosnet.named_parameters():
+                v.requires_grad = False
+            self.combine_func=lambda src_img,src_dia:torch.cat((src_img.view(src_img.size(0), -1),
+                              src_img.view(src_img.size(0), -1)),
+                             dim=1)
+        elif (self.train_option == "DIA_ONLY"):
+            for k, v in self.imagenet.named_parameters():
+                v.requires_grad = False
+            self.combine_func=lambda src_img,src_dia:torch.cat((src_dia.view(src_dia.size(0), -1),
+                              src_dia.view(src_dia.size(0), -1)),
+                             dim=1)
+        else:
+            for k, v in self.diagnosnet.named_parameters():
+                v.requires_grad = False
+            for k, v in self.imagenet.named_parameters():
+                v.requires_grad = False
+            self.combine_func=lambda src_img,src_dia:torch.cat((src_img.view(src_img.size(0), -1),
+                              src_dia.view(src_dia.size(0), -1)),
+                             dim=1)
     def forward(self, image_data,diagnos_data):
         h1=self.imagenet(image_data)
         h2=self.diagnosnet(diagnos_data)
@@ -86,14 +93,12 @@ def accuracy(y_pred,target):
     _, predicted = torch.max(y_pred.data, 1)
     _, actual = torch.max(target.data, 1)
     return int((predicted == actual).sum())*1.0/target.size(0)
-    #print(int(target.size(0)))
-    #return (predicted == actual).sum()
 
 def train(train_option, net_type):
     model=CombineNet(3, 3, 5,train_option= train_option,net_type= net_type)
-    img_mdl_path=os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 1, "0.5779816513761468"))
-    dia_mdl_path=os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 1, "0.5779816513761468"))
-    fc_mdl_path=os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 1, "0.5779816513761468"))
+    img_mdl_path=os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 12, "0.6055045871559633"))
+    dia_mdl_path=os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 12, "0.6055045871559633"))
+    fc_mdl_path=os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 12, "0.6055045871559633"))
     model.load_from(img_mdl_path,dia_mdl_path,fc_mdl_path)
     Common.checkDirectory("model")
     # 根据自己定义的那个MyDataset来创建数据集！注意是数据集！而不是loader迭代器
@@ -108,7 +113,10 @@ def train(train_option, net_type):
 
     criterion = torch.nn.MSELoss(reduction='sum')
 
-    optimizer = torch.optim.SGD(model.parameters(), lr=1e-4,momentum = 0.3)
+    optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()),
+                                lr=1e-4,
+                                momentum = 0.3,
+                               )
     #optimizer = torch.optim.adam(model.parameters(), lr=1e-4 )
     for epo in range(120):
         print("epoch {0}".format(epo),flush=True)
@@ -162,4 +170,4 @@ def test(epo,acc,title1,title2,title3,type1,type2,type3):
             batch_index+=1
 
 if __name__ == "__main__":
-    train("IMG_ONLY","resnet50")
+    train("DIA_ONLY","resnet50")
