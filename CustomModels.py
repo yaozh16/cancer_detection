@@ -21,8 +21,9 @@ class CombineNet(torch.nn.Module):
         self.D_out=D_out
         self.H1=60
         self.H2=20
-        self.imagenet=models.vgg11(num_classes=self.H1)
-        #self.imagenet.fc=nn.Linear(2048,self.H1)
+        #self.imagenet=models.vgg11(num_classes=self.H1)
+        self.imagenet=models.resnet50(pretrained=True)
+        self.imagenet.fc=nn.Linear(2048,self.H1)
         self.diagnosnet=nn.Sequential(
             nn.Linear(self.Diagnos_in, 100),
             nn.ReLU(inplace=True) ,
@@ -71,7 +72,7 @@ def accuracy(y_pred,target):
 
 
 
-def train(type):
+def train(type,title):
 
     model=CombineNet(3,3,5,type)
     Common.checkDirectory("model")
@@ -117,15 +118,15 @@ def train(type):
         print("[accuracy]{0}".format(accurate_count*1.0/total_count),flush=True)
         if(acc>best_acc):
             best_acc=acc
-            model.save_to(os.path.join("model","{0}_{1}_{2}".format(type,epo,acc)))
+            model.save_to(os.path.join("model","{0}_{1}_{2}_{3}".format(title,type,epo,acc)))
 
-def test(epo,acc,type1,type2,type3):
+def test(epo,acc,title1,title2,title3,type1,type2,type3):
     test_data = MyDataset(datacsv='valid.csv',rootpath=os.path.join("formated","test"), transform=transforms.ToTensor())
     valid_loader = DataLoader(dataset=test_data, batch_size=1, shuffle=False)
     model = CombineNet(3, 3, 5, "IMG_ONLY")
-    para_path1=os.path.join("model","{0}_{1}_{2}".format(type1,epo,acc))
-    para_path2=os.path.join("model","{0}_{1}_{2}".format(type2,epo,acc))
-    para_path3=os.path.join("model","{0}_{1}_{2}".format(type3,epo,acc))
+    para_path1=os.path.join("model","{0}_{1}_{2}_{3}".format(title1,type1,epo,acc))
+    para_path2=os.path.join("model","{0}_{1}_{2}_{3}".format(title2,type2,epo,acc))
+    para_path3=os.path.join("model","{0}_{1}_{2}_{3}".format(title3,type3,epo,acc))
     model.load_from(para_path1,para_path2,para_path3)
     batch_index=0
     for img_data,diagnos_data, target in valid_loader:
@@ -138,4 +139,4 @@ def test(epo,acc,type1,type2,type3):
             batch_index+=1
 
 if __name__ == "__main__":
-    train("IMG_ONLY")
+    train("IMG_ONLY","resnet50")
