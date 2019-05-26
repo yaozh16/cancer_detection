@@ -55,13 +55,13 @@ class CombineNet(torch.nn.Module):
         y_pred = self.fc(combined)
         return y_pred
     def save_to(self,path_prefix):
-        torch.save(self.imagenet.state_dict(), "{0}_{1}.mdl".format(path_prefix,"image.mdl"))
-        torch.save(self.diagnosnet.state_dict(), "{0}_{1}.mdl".format(path_prefix,"diagnos.mdl"))
-        torch.save(self.fc.state_dict(), "{0}_{1}.mdl".format(path_prefix,"fc.mdl"))
+        torch.save(self.imagenet.state_dict(), "{0}_{1}.mdl".format(path_prefix,"image"))
+        torch.save(self.diagnosnet.state_dict(), "{0}_{1}.mdl".format(path_prefix,"diagnos"))
+        torch.save(self.fc.state_dict(), "{0}_{1}.mdl".format(path_prefix,"fc"))
     def load_from(self,path_prefix_img,path_prefix_diagnos,path_prefix_fc):
-        self.imagenet.load_state_dict(torch.load("{0}_{1}.mdl".format(path_prefix_img,"image.mdl")))
-        self.diagnosnet.load_state_dict(torch.load("{0}_{1}.mdl".format(path_prefix_diagnos,"diagnos.mdl")))
-        self.fc.load_state_dict(torch.load("{0}_{1}.mdl".format(path_prefix_fc,"fc.mdl")))
+        self.imagenet.load_state_dict(torch.load("{0}_{1}.mdl".format(path_prefix_img,"image")))
+        self.diagnosnet.load_state_dict(torch.load("{0}_{1}.mdl".format(path_prefix_diagnos,"diagnos")))
+        self.fc.load_state_dict(torch.load("{0}_{1}.mdl".format(path_prefix_fc,"fc")))
 
 def accuracy(y_pred,target):
     _, predicted = torch.max(y_pred.data, 1)
@@ -70,11 +70,10 @@ def accuracy(y_pred,target):
     #print(int(target.size(0)))
     #return (predicted == actual).sum()
 
-
-
 def train(type,title):
-
     model=CombineNet(3,3,5,type)
+    save_path=os.path.join("model","{0}_{1}_{2}_{3}".format(title,type,2,"0.48623853211009177"))
+    #model.load_from()
     Common.checkDirectory("model")
     # 根据自己定义的那个MyDataset来创建数据集！注意是数据集！而不是loader迭代器
     train_data = MyDataset(datacsv='train.csv',rootpath=os.path.join("formated","train"), transform=transforms.ToTensor())
