@@ -51,7 +51,9 @@ class CombineNet(torch.nn.Module):
             nn.Linear(self.H1*2,self.H2),
             nn.ReLU(inplace=True),
             nn.Linear(self.H2,self.D_out),
+            nn.Sigmoid()
         )
+
         if (self.train_option == "IMG_ONLY"):
             for k, v in self.diagnosnet.named_parameters():
                 v.requires_grad = False
@@ -130,7 +132,7 @@ def train(train_option, net_type):
         print("[accuracy]{0}".format(accurate_count * 1.0 / total_count), flush=True)
         return acc
     valid_round()
-    for epo in range(120):
+    for epo in range(30):
         print("epoch {0}".format(epo),flush=True)
         batch_index=0
         for img_data,diagnos_data, target in train_loader:
@@ -176,4 +178,4 @@ def test(epo,acc,title1,title2,title3,type1,type2,type3):
             batch_index+=1
 
 if __name__ == "__main__":
-    train("DIA_ONLY","resnet50")
+    train("IMG_ONLY","resnet50")

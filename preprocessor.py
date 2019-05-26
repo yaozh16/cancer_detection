@@ -117,7 +117,7 @@ def splitSet(p=0.7, src_dir="train", dst_dir=os.path.join("formated", "train")):
     splited_set2csv(os.path.join(dst_dir,"valid.csv"),validset)
 
 if __name__=="__main__":
-    splitSet(p=0.7, src_dir="train", dst_dir=os.path.join("formated", "train"))
+    splitSet(p=0.8, src_dir="train", dst_dir=os.path.join("formated", "train"))
     #splitSet(p=0, src_dir="test", dst_dir=os.path.join("formated", "test"))
     #format2size(src_dir="train",dst_dir="formated")
     #format2size(src_dir="test",dst_dir="formated")
