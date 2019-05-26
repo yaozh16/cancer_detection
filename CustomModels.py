@@ -104,8 +104,8 @@ def train(model,train_option, net_type):
     train_data = MyDataset(datacsv='train.csv',rootpath=os.path.join("formated","train"), transform=transforms.ToTensor())
     valid_data = MyDataset(datacsv='valid.csv',rootpath=os.path.join("formated","train"), transform=transforms.ToTensor())
 
-    train_loader = DataLoader(dataset=train_data, batch_size=58, shuffle=True)
-    valid_loader = DataLoader(dataset=valid_data, batch_size=60)
+    train_loader = DataLoader(dataset=train_data, batch_size=50, shuffle=True)
+    valid_loader = DataLoader(dataset=valid_data, batch_size=10)
 
 
     best_acc=0
