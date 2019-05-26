@@ -22,7 +22,7 @@ class CombineNet(torch.nn.Module):
         self.H1=60
         self.H2=20
         #self.imagenet=models.vgg11(num_classes=self.H1)
-        self.imagenet=models.resnet50(pretrained=True)
+        self.imagenet=models.resnet34(pretrained=True)
         self.imagenet.fc=nn.Linear(2048,self.H1)
         self.diagnosnet=nn.Sequential(
             nn.Linear(self.Diagnos_in, 100),
@@ -138,4 +138,4 @@ def test(epo,acc,title1,title2,title3,type1,type2,type3):
             batch_index+=1
 
 if __name__ == "__main__":
-    train("IMG_ONLY","resnet50")
+    train("IMG_ONLY","resnet34")
