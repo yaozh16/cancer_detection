@@ -21,11 +21,8 @@ class CombineNet(torch.nn.Module):
         self.D_out=D_out
         self.H1=60
         self.H2=20
-        self.imagenet=models.resnet152(pretrained=True)
-        self.imagenet.fc=nn.Sequential(
-            nn.Linear(2048,self.H1),
-            nn.ReLU(inplace=True),
-        )
+        self.imagenet=models.vgg13(num_classes=self.H1)
+        #self.imagenet.fc=nn.Linear(2048,self.H1)
         self.diagnosnet=nn.Sequential(
             nn.Linear(self.Diagnos_in, 100),
             nn.ReLU(inplace=True) ,
