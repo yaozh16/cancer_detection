@@ -32,6 +32,9 @@ class CombineNet(torch.nn.Module):
         elif(net_type=="resnet34"):
             self.imagenet = models.resnet34(pretrained=True)
             self.imagenet.fc=nn.Linear(512,self.H1)
+        elif(net_type=="resnet101"):
+            self.imagenet = models.resnet101(pretrained=True)
+            self.imagenet.fc=nn.Linear(2048,self.H1)
         elif(net_type=="resnet152"):
             self.imagenet = models.resnet152(pretrained=True)
             self.imagenet.fc=nn.Linear(2048,self.H1)
@@ -151,4 +154,4 @@ def test(epo,acc,title1,title2,title3,type1,type2,type3):
             batch_index+=1
 
 if __name__ == "__main__":
-    train("IMG_ONLY","resnet34")
+    train("IMG_ONLY","resnet101")
