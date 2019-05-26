@@ -106,7 +106,7 @@ def train(train_option, net_type):
 
     criterion = torch.nn.MSELoss(reduction='sum')
 
-    optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
+    optimizer = torch.optim.SGD(model.parameters(), lr=1e-4,momentum = 0.3)
     #optimizer = torch.optim.adam(model.parameters(), lr=1e-4 )
     for epo in range(120):
         print("epoch {0}".format(epo),flush=True)
