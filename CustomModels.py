@@ -98,7 +98,7 @@ def train(train_option, net_type):
     model=CombineNet(3, 3, 5,train_option= train_option,net_type= net_type)
     img_mdl_path=os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 12, "0.6055045871559633"))
     dia_mdl_path=os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 12, "0.6055045871559633"))
-    fc_mdl_path=os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 12, "0.6055045871559633"))
+    fc_mdl_path =os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 12, "0.6055045871559633"))
     model.load_from(img_mdl_path,dia_mdl_path,fc_mdl_path)
     Common.checkDirectory("model")
     # 根据自己定义的那个MyDataset来创建数据集！注意是数据集！而不是loader迭代器
@@ -117,7 +117,18 @@ def train(train_option, net_type):
                                 lr=1e-4,
                                 momentum = 0.3,
                                )
-    #optimizer = torch.optim.adam(model.parameters(), lr=1e-4 )
+    def valid_round():
+        accurate_count = 0
+        total_count = 0
+        for img_data, diagnos_data, target in valid_loader:
+            y_pred = model(img_data, diagnos_data)
+            accurate_count += accuracy(y_pred, target) * target.size(0)
+            total_count += target.size(0)
+            del img_data, diagnos_data, target
+        acc = accurate_count * 1.0 / total_count
+        print("[accuracy]{0}".format(accurate_count * 1.0 / total_count), flush=True)
+        return acc
+    valid_round()
     for epo in range(120):
         print("epoch {0}".format(epo),flush=True)
         batch_index=0
@@ -138,15 +149,7 @@ def train(train_option, net_type):
                 print("[ERROR!]{0}:ignored".format(e),flush=True)
             del img_data,diagnos_data,target
             batch_index+=1
-        accurate_count=0
-        total_count=0
-        for img_data,diagnos_data,target in valid_loader:
-            y_pred = model(img_data ,diagnos_data)
-            accurate_count+=accuracy(y_pred,target)*target.size(0)
-            total_count+=target.size(0)
-            del img_data,diagnos_data,target
-        acc=accurate_count*1.0/total_count
-        print("[accuracy]{0}".format(accurate_count*1.0/total_count),flush=True)
+        acc=valid_round()
         if(acc>best_acc):
             best_acc=acc
         model.save_to(os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, train_option, epo, acc)))
@@ -154,7 +157,7 @@ def train(train_option, net_type):
 def test(epo,acc,title1,title2,title3,type1,type2,type3):
     test_data = MyDataset(datacsv='valid.csv',rootpath=os.path.join("formated","test"), transform=transforms.ToTensor())
     valid_loader = DataLoader(dataset=test_data, batch_size=1, shuffle=False)
-    model = CombineNet(3, 3, 5, "IMG_ONLY")
+    model = CombineNet(3, 3, 5, "IMG_ONLY","BOTH")
     para_path1=os.path.join("model","{0}_{1}_{2}_{3}".format(title1,type1,epo,acc))
     para_path2=os.path.join("model","{0}_{1}_{2}_{3}".format(title2,type2,epo,acc))
     para_path3=os.path.join("model","{0}_{1}_{2}_{3}".format(title3,type3,epo,acc))
