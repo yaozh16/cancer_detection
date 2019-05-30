@@ -10,7 +10,7 @@ from torchvision import transforms,models
 from CustomDataSet import MyDataset
 import Common
 import numpy as np
-
+from tqdm import tqdm
 
 class CombineNet(torch.nn.Module):
     def __init__(self, Image_in, Diagnos_in, D_out, train_option, net_type):
@@ -107,7 +107,7 @@ def train(model,train_option, net_type):
     train_data = MyDataset(datacsv='train.csv',rootpath=os.path.join("formated","train"), transform=transforms.ToTensor())
     valid_data = MyDataset(datacsv='valid.csv',rootpath=os.path.join("formated","train"), transform=transforms.ToTensor())
 
-    train_loader = DataLoader(dataset=train_data, batch_size=50, shuffle=True)
+    train_loader = DataLoader(dataset=train_data, batch_size=30, shuffle=True)
     valid_loader = DataLoader(dataset=valid_data, batch_size=10)
 
 
@@ -134,31 +134,26 @@ def train(model,train_option, net_type):
     for epo in range(30):
         print("epoch {0}".format(epo),flush=True)
         batch_index=0
-        for img_data,diagnos_data, target in train_loader:
-            print(target.shape)
-            exit(0)
-            try:
-                # Forward pass: Compute predicted y by passing x to the model
-                y_pred = model(img_data ,diagnos_data)
+        tqdm_iterator=tqdm(train_loader)
+        for img_data,diagnos_data, target in tqdm_iterator:
+            optimizer.zero_grad()
 
-                # Compute and print loss
-                loss = criterion(y_pred, target)
-                print("\t[e {0}:b {1}]{2}[{3}]".format(epo ,batch_index, loss.item(),accuracy(y_pred,target)),flush=True)
+            # Forward pass: Compute predicted y by passing x to the model
 
-                # Zero gradients, perform a backward pass, and update the weights.
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
-            except Exception as e:
-                print("[ERROR!]{0}:ignored".format(e),flush=True)
-            del img_data,diagnos_data,target
+            y_pred = model(img_data ,diagnos_data)
+
+            # Compute and print loss
+            loss = criterion(y_pred, target)
+            tqdm_iterator.set_description("[e {0}:b {1}]{2}[{3}]".format(epo ,batch_index, loss.item(),accuracy(y_pred,target)))
+            # Zero gradients, perform a backward pass, and update the weights.
+            loss.backward()
+            optimizer.step()
             batch_index+=1
         acc=valid_round()
         if(acc>best_acc):
             best_acc=acc
             model.save_to(os.path.join("model","best_{0}_{1}_{2}_{3}".format(net_type, train_option, epo, "%.4f"%acc)))
-        elif(epo%3==0):
-            model.save_to(os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, train_option, epo,  "%.4f"%acc)))
+        model.save_to(os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, train_option, epo,  "%.4f"%acc)))
 
 def test(epo,acc,title1,title2,title3,type1,type2,type3):
     test_data = MyDataset(datacsv='valid.csv',rootpath=os.path.join("formated","test"), transform=transforms.ToTensor())
