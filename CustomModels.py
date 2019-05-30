@@ -126,11 +126,11 @@ def train(model,train_option, net_type):
             total_count += target.size(0)
             del img_data, diagnos_data, target
         acc = accurate_count * 1.0 / total_count
-        print("[accuracy]{0}".format(accurate_count * 1.0 / total_count), flush=True)
+        print("[accuracy]{0}\n".format(accurate_count * 1.0 / total_count), flush=True)
         return acc
     valid_round()
     for epo in range(30):
-        print("epoch {0}".format(epo),flush=True)
+        print("* epoch {0}\n".format(epo),flush=True)
         batch_index=0
         tqdm_iterator=tqdm(train_loader)
         for img_data,diagnos_data, target in tqdm_iterator:
@@ -142,7 +142,8 @@ def train(model,train_option, net_type):
 
             # Compute and print loss
             loss = criterion(y_pred, target)
-            tqdm_iterator.set_description("[e {0}:b {1}]{2}[{3}]".format(epo ,batch_index, loss.item(),accuracy(y_pred,target)))
+            tqdm_iterator.set_description("[e {0}:b {1}]{2}[{3}]".format(epo ,batch_index, "%.4f"%loss.item(),"%.4f"%accuracy(y_pred,target)))
+
             # Zero gradients, perform a backward pass, and update the weights.
             loss.backward()
             optimizer.step()

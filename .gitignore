@@ -6,4 +6,6 @@ train/
 formated/
 __pycache__/
 .idea/
+cancer_detection_dataset
 tarfile/
+model/

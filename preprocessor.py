@@ -83,13 +83,15 @@ def cropValidBox(img_r, display=False):
         cv2.destroyAllWindows()
 
     return img_r[max(0,vs[0]-padding*2):vs[-1]-padding*2,max(0,hs[0]-padding*2):hs[-1]-padding*2,:]
-def format2size(src_dir="train",dst_dir="formated"):
+def format2size(src_dir,dst_dir):
     all_paths=sorted(glob.glob(os.path.join(src_dir,"images","*","*.jpg")))
     for i,img_path in enumerate(tqdm(all_paths)):
         imr_r=cv2.imread(img_path)
         img=cropValidBox(imr_r, False)
         img=cv2.resize(img,(224,224))
-        dstpath=os.path.join(dst_dir,img_path)
+        prefix,file_name=os.path.split(img_path)
+        _,id=os.path.split(prefix)
+        dstpath=os.path.join(dst_dir,"images",id,file_name)
         Common.checkDirectory(os.path.split(dstpath)[0])
         cv2.imwrite(os.path.join(dst_dir,img_path),img)
 
@@ -123,6 +125,6 @@ if __name__=="__main__":
     print("* split test set\n")
     splitSet(p=0, src_dir=os.path.join("..","cancer_detection_dataset","test"), dst_dir=os.path.join("formated", "test"))
     print("* format2size train\n")
-    format2size(src_dir=os.path.join("..","cancer_detection_dataset","train"),dst_dir="formated")
+    format2size(src_dir=os.path.join("..","cancer_detection_dataset","train"),dst_dir=os.path.join("formated", "train"))
     print("* format2size test\n")
-    format2size(src_dir=os.path.join("..","cancer_detection_dataset","test"),dst_dir="formated")
+    format2size(src_dir=os.path.join("..","cancer_detection_dataset","test"),dst_dir=os.path.join("formated", "test"))
