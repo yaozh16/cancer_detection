@@ -8,6 +8,7 @@ import random
 import glob
 from matplotlib import pyplot as plt
 import pandas as pd
+from tqdm import tqdm
 
 def cropValidBox(img_r, display=False):
     img = cv2.cvtColor(img_r, cv2.COLOR_BGR2GRAY)
@@ -84,8 +85,9 @@ def cropValidBox(img_r, display=False):
     return img_r[max(0,vs[0]-padding*2):vs[-1]-padding*2,max(0,hs[0]-padding*2):hs[-1]-padding*2,:]
 def format2size(src_dir="train",dst_dir="formated"):
     all_paths=sorted(glob.glob(os.path.join(src_dir,"images","*","*.jpg")))
-    for i,img_path in enumerate(all_paths):
-        img=cropValidBox(img_path, False)
+    for i,img_path in enumerate(tqdm(all_paths)):
+        imr_r=cv2.imread(img_path)
+        img=cropValidBox(imr_r, False)
         img=cv2.resize(img,(224,224))
         dstpath=os.path.join(dst_dir,img_path)
         Common.checkDirectory(os.path.split(dstpath)[0])
@@ -102,7 +104,7 @@ def splitSet(p=0.7, src_dir="train", dst_dir=os.path.join("formated", "train")):
     def splited_set2csv(path,splited_set):
         with open(path,"w") as f:
             f.write("id,img,age,HER2,P53,molecular_subtype\n")
-            for img_path in splited_set:
+            for img_path in tqdm(splited_set):
                 img_idx=os.path.split(img_path)[-1]
                 id=os.path.split(os.path.split(img_path)[0])[-1]
                 p=patients[patients["id"]==id]
@@ -116,7 +118,11 @@ def splitSet(p=0.7, src_dir="train", dst_dir=os.path.join("formated", "train")):
     splited_set2csv(os.path.join(dst_dir,"valid.csv"),validset)
 
 if __name__=="__main__":
+    print("* split train\dev set\n")
     splitSet(p=0.8, src_dir=os.path.join("..","cancer_detection_dataset","train"), dst_dir=os.path.join("formated", "train"))
+    print("* split test set\n")
     splitSet(p=0, src_dir=os.path.join("..","cancer_detection_dataset","test"), dst_dir=os.path.join("formated", "test"))
+    print("* format2size train\n")
     format2size(src_dir=os.path.join("..","cancer_detection_dataset","train"),dst_dir="formated")
+    print("* format2size test\n")
     format2size(src_dir=os.path.join("..","cancer_detection_dataset","test"),dst_dir="formated")
