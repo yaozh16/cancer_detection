@@ -83,16 +83,17 @@ class CombineNet(torch.nn.Module):
         y_pred = self.fc(combined)
         return y_pred
     def save_to(self,path_prefix):
-        torch.save(self.imagenet.state_dict(), "{0}_{1}.mdl".format(path_prefix,"image"))
-        torch.save(self.diagnosnet.state_dict(), "{0}_{1}.mdl".format(path_prefix,"diagnos"))
-        torch.save(self.fc.state_dict(), "{0}_{1}.mdl".format(path_prefix,"fc"))
+        os.makedirs(path_prefix)
+        torch.save(self.imagenet.state_dict(), "{0}/{1}.mdl".format(path_prefix,"image"))
+        torch.save(self.diagnosnet.state_dict(), "{0}/{1}.mdl".format(path_prefix,"diagnos"))
+        torch.save(self.fc.state_dict(), "{0}/{1}.mdl".format(path_prefix,"fc"))
     def load_from(self,path_prefix_img,path_prefix_diagnos,path_prefix_fc):
         if(path_prefix_img!=None):
-            self.imagenet.load_state_dict(torch.load("{0}_{1}.mdl".format(path_prefix_img,"image")))
+            self.imagenet.load_state_dict(torch.load("{0}/{1}.mdl".format(path_prefix_img,"image")))
         if(path_prefix_diagnos!=None):
-            self.diagnosnet.load_state_dict(torch.load("{0}_{1}.mdl".format(path_prefix_diagnos,"diagnos")))
+            self.diagnosnet.load_state_dict(torch.load("{0}/{1}.mdl".format(path_prefix_diagnos,"diagnos")))
         if(path_prefix_fc!=None):
-            self.fc.load_state_dict(torch.load("{0}_{1}.mdl".format(path_prefix_fc,"fc")))
+            self.fc.load_state_dict(torch.load("{0}/{1}.mdl".format(path_prefix_fc,"fc")))
 
 def accuracy(y_pred,target):
     _, predicted = torch.max(y_pred.data, 1)
@@ -155,9 +156,9 @@ def train(model,train_option, net_type):
         acc=valid_round()
         if(acc>best_acc):
             best_acc=acc
-            model.save_to(os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, train_option, epo, acc)))
+            model.save_to(os.path.join("model","best_{0}_{1}_{2}_{3}".format(net_type, train_option, epo, "%.4f"%acc)))
         elif(epo%3==0):
-            model.save_to(os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, train_option, epo, acc)))
+            model.save_to(os.path.join("model","{0}_{1}_{2}_{3}".format(net_type, train_option, epo,  "%.4f"%acc)))
 
 def test(epo,acc,title1,title2,title3,type1,type2,type3):
     test_data = MyDataset(datacsv='valid.csv',rootpath=os.path.join("formated","test"), transform=transforms.ToTensor())
