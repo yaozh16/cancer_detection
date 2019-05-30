@@ -75,8 +75,6 @@ class CombineNet(torch.nn.Module):
                               src_dia.view(src_dia.size(0), -1)),
                              dim=1)
     def forward(self, image_data,diagnos_data):
-        print(image_data.shape)
-        exit(0)
         h1=self.imagenet(image_data)
         h2=self.diagnosnet(diagnos_data)
         combined = self.combine_func(h1,h2)
