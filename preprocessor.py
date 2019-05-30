@@ -93,7 +93,7 @@ def format2size(src_dir,dst_dir):
         _,id=os.path.split(prefix)
         dstpath=os.path.join(dst_dir,"images",id,file_name)
         Common.checkDirectory(os.path.split(dstpath)[0])
-        cv2.imwrite(os.path.join(dst_dir,img_path),img)
+        cv2.imwrite(dstpath,img)
 
 def splitSet(p=0.7, src_dir="train", dst_dir=os.path.join("formated", "train")):
     random.seed(1079)

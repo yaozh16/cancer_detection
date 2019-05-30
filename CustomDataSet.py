@@ -35,9 +35,10 @@ class MyDataset(Dataset):  # 创建自己的类：MyDataset,这个类是继承�
         diagnos_data=torch.from_numpy(np.array(self.datavalues[index][2:5],dtype=np.float32))
         label=np.array(self.labelcandidates[self.datavalues[index][-1]],dtype=np.float32)
         label=torch.from_numpy(label)
-
+        print(img_path)
         img_data=Image.fromarray(cv2.imread(img_path))# 按照img_path读入图片并预处理
 
+        exit(0)
         if self.transform is not None:
             img_data = self.transform(img_data)  # 是否进行transform
         return img_data,diagnos_data, label    # return很关键，return回哪些内容，那么我们在训练时循环读取每个batch时，就能获得哪些内容
