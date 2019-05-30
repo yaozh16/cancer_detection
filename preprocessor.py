@@ -9,8 +9,7 @@ import glob
 from matplotlib import pyplot as plt
 import pandas as pd
 
-def cropValidBox(img_path, display=False):
-    img_r = cv2.imread(img_path)
+def cropValidBox(img_r, display=False):
     img = cv2.cvtColor(img_r, cv2.COLOR_BGR2GRAY)
     h, w = img.shape
     padding = 10
@@ -117,7 +116,7 @@ def splitSet(p=0.7, src_dir="train", dst_dir=os.path.join("formated", "train")):
     splited_set2csv(os.path.join(dst_dir,"valid.csv"),validset)
 
 if __name__=="__main__":
-    splitSet(p=0.8, src_dir="train", dst_dir=os.path.join("formated", "train"))
-    #splitSet(p=0, src_dir="test", dst_dir=os.path.join("formated", "test"))
-    #format2size(src_dir="train",dst_dir="formated")
-    #format2size(src_dir="test",dst_dir="formated")
+    splitSet(p=0.8, src_dir=os.path.join("..","cancer_detection_dataset","train"), dst_dir=os.path.join("formated", "train"))
+    splitSet(p=0, src_dir=os.path.join("..","cancer_detection_dataset","test"), dst_dir=os.path.join("formated", "test"))
+    format2size(src_dir=os.path.join("..","cancer_detection_dataset","train"),dst_dir="formated")
+    format2size(src_dir=os.path.join("..","cancer_detection_dataset","test"),dst_dir="formated")

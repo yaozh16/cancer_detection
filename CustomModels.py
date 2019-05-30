@@ -75,6 +75,8 @@ class CombineNet(torch.nn.Module):
                               src_dia.view(src_dia.size(0), -1)),
                              dim=1)
     def forward(self, image_data,diagnos_data):
+        print(image_data.shape)
+        exit(0)
         h1=self.imagenet(image_data)
         h2=self.diagnosnet(diagnos_data)
         combined = self.combine_func(h1,h2)
@@ -132,6 +134,8 @@ def train(model,train_option, net_type):
         print("epoch {0}".format(epo),flush=True)
         batch_index=0
         for img_data,diagnos_data, target in train_loader:
+            print(target.shape)
+            exit(0)
             try:
                 # Forward pass: Compute predicted y by passing x to the model
                 y_pred = model(img_data ,diagnos_data)
@@ -178,11 +182,11 @@ if __name__ == "__main__":
     net_type="resnet50"
 
     model = CombineNet(3, 3, 5, train_option=train_option, net_type=net_type)
-    #img_mdl_path = None
-    img_mdl_path = os.path.join("model", "{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 12, "0.6055045871559633"))
+    img_mdl_path = None
+    #img_mdl_path = os.path.join("model", "{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 12, "0.6055045871559633"))
     #dia_mdl_path = os.path.join("model", "{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 12, "0.6055045871559633"))
     dia_mdl_path =None
-    #fc_mdl_path = None
-    fc_mdl_path = os.path.join("model", "{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 12, "0.6055045871559633"))
+    fc_mdl_path = None
+    #fc_mdl_path = os.path.join("model", "{0}_{1}_{2}_{3}".format(net_type, "IMG_ONLY", 12, "0.6055045871559633"))
     model.load_from(img_mdl_path, dia_mdl_path, fc_mdl_path)
     train(model,train_option,net_type)
